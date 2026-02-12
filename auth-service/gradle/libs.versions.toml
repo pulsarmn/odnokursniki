@@ -1,0 +1,2 @@
+[libraries]
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
