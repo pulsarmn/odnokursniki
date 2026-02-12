@@ -1,0 +1,18 @@
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+out
+
+# Gradle
+.gradle
+*/build
+
+# VS Code
+.vscode/
+
+# Kotlin
+/.kotlin/
+
+node_modules
