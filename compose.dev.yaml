@@ -1,0 +1,15 @@
+services:
+  auth-service-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_database
+    ports:
+      - "5445:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: on-failure
+
+volumes:
+  pg_data:
