@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -39,4 +41,8 @@ public class User {
     @Builder.Default
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Session> sessions = new ArrayList<>();
 }
