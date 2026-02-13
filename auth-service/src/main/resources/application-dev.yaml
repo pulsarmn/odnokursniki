@@ -12,3 +12,7 @@ spring:
   data:
     redis:
       port: 6000
+
+logging:
+  level:
+    root: DEBUG
