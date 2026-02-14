@@ -11,5 +11,14 @@ services:
       - pg_data:/var/lib/postgresql/data
     restart: on-failure
 
+  auth-service-redis:
+    image: redis:8.4.0
+    ports:
+      - "6000:6379"
+    volumes:
+      - redis_data:/data
+    restart: on-failure
+
 volumes:
   pg_data:
+  redis_data:
