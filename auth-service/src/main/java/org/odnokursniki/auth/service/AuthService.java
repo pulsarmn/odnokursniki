@@ -23,6 +23,12 @@ public class AuthService {
     private static final int MAX_ATTEMPTS = 5;
     private static final String VERIFICATION_PREFIX = "verification:";
 
+
+    /**
+     * Creates and sends a verification code to the specified phone number
+     *
+     * @param sendCodeRequest phone number components
+     */
     public void sendCode(SendCodeRequest sendCodeRequest) {
         String normalizedPhone = phoneNormalizer.normalize(
                 sendCodeRequest.countryCode(),
