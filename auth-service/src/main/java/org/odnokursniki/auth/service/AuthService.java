@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -20,26 +21,38 @@ public class AuthService {
     private final StringRedisTemplate redisTemplate;
 
     private static final int MAX_ATTEMPTS = 5;
+    private static final String VERIFICATION_PREFIX = "verification:";
 
+
+    /**
+     * Creates and sends a verification code to the specified phone number
+     *
+     * @param sendCodeRequest phone number components
+     */
     public void sendCode(SendCodeRequest sendCodeRequest) {
         String normalizedPhone = phoneNormalizer.normalize(
                 sendCodeRequest.countryCode(),
-                sendCodeRequest.phoneNumber());
-        checkRateLimiting(normalizedPhone);
+                sendCodeRequest.phoneNumber()
+        );
+
+        checkRateLimit(normalizedPhone);
 
         log.debug("Sending verification code to '{}' phone...", normalizedPhone);
         String verificationCode = smsService.send(normalizedPhone);
-        String verificationCodeKey = "verification:code:" + normalizedPhone;
-        redisTemplate.opsForValue().set(verificationCodeKey, verificationCode, Duration.ofMinutes(10));
+        String verificationRedisKey = VERIFICATION_PREFIX + normalizedPhone;
+
+        redisTemplate.opsForHash().put(verificationRedisKey, "phoneNumber", normalizedPhone);
+        redisTemplate.opsForHash().put(verificationRedisKey, "code", verificationCode);
+        redisTemplate.expire(verificationRedisKey, Duration.ofMinutes(15));
     }
 
-    private void checkRateLimiting(String normalizedPhone) {
-        String attemptsKey = "verification:code:attempts:" + normalizedPhone;
-        Long attempts = redisTemplate.opsForValue().increment(attemptsKey);
-        redisTemplate.expire(attemptsKey, Duration.ofMinutes(10));
+    private void checkRateLimit(String phoneNumber) {
+        String verificationRedisKey = VERIFICATION_PREFIX + phoneNumber;
+        Long attempts = redisTemplate.opsForHash().increment(verificationRedisKey, "attempts", 1);
 
         if (attempts != null && attempts > MAX_ATTEMPTS) {
-            log.error("Too many requests on phone number: {}", normalizedPhone);
+            log.error("Too many requests on phone number: {}", phoneNumber);
+            redisTemplate.opsForHash().expire(verificationRedisKey, Duration.ofMinutes(15), List.of("attempts"));
             throw new RateLimitingException("Too many requests");
         }
     }
